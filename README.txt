@@ -10,14 +10,18 @@ MIT License (see headers in files)
 REQUIREMENTS
 ------------
 * PHP 5.x or later
-* Bitcoin Core 0.9 or later
+* Bitcoin Core 0.19 or later
 
 
 BEFORE YOU START
 ----------------
 Check the constant settings at the top of OP_RETURN.php.
+Set a wallet name if you have multiple wallets. And set the passphrase if your
+wallet is encrypted. Make sure to unset the passphrase when done.
 If you just installed Bitcoin Core, wait for it to download and verify old blocks.
 If using as a library, include/require 'OP_RETURN.php' in your PHP script file.
+
+Support SegWit address.
 
 
 TO SEND A BITCOIN TRANSACTION WITH SOME OP_RETURN METADATA
@@ -151,6 +155,10 @@ As a library:
 
 VERSION HISTORY
 ---------------
+v2.0.2.1 - 26 February 2020
+* Added multi-wallet support.
+* Replaced deprecated signrawtransaction with signrawtransactionwithwallet.
+
 v2.0.2 - 27 June 2015
 * Use Bitcoin Core getblock API to get raw block content instead of wire protocol
 
