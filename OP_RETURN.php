@@ -26,6 +26,9 @@
  * THE SOFTWARE.
  */
 
+	define('OP_RETURN_WALLET', ''); // The wallet name
+	define('OP_RETURN_WALLET_PASSPHRASE', ''); // The wallet passphrase
+
 	define('OP_RETURN_BITCOIN_IP', '127.0.0.1'); // IP address of your bitcoin node
 	define('OP_RETURN_BITCOIN_USE_CMD', false); // use command-line instead of JSON-RPC?
 	
@@ -382,7 +385,12 @@
 	
 	function OP_RETURN_sign_send_txn($raw_txn, $testnet)
 	{
-		$signed_txn=OP_RETURN_bitcoin_cmd('signrawtransaction', $testnet, $raw_txn);
+		if (strlen(OP_RETURN_WALLET_PASSPHRASE) > 0)
+			OP_RETURN_bitcoin_cmd('walletpassphrase', $testnet, OP_RETURN_WALLET_PASSPHRASE, 60);
+			
+		$signed_txn=OP_RETURN_bitcoin_cmd('signrawtransactionwithwallet', $testnet, $raw_txn);
+		OP_RETURN_bitcoin_cmd('walletlock', $testnet);
+		
 		if (!$signed_txn['complete'])
 			return array('error' => 'Could not sign the transaction');
 			
@@ -510,7 +518,12 @@
 			if (!strlen($user) && strlen($password))
 				return null; // no point trying in this case
 			
-			$curl=curl_init('http://'.OP_RETURN_BITCOIN_IP.':'.$port.'/');
+			if (strlen(OP_RETURN_WALLET) > 0)
+				$wallet = 'wallet/' . OP_RETURN_WALLET;
+			else
+				$wallet = '';
+				
+			$curl=curl_init('http://'.OP_RETURN_BITCOIN_IP.':'.$port.'/' . $wallet);
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 			curl_setopt($curl, CURLOPT_USERPWD, $user.':'.$password);
 			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, OP_RETURN_NET_TIMEOUT_CONNECT);
@@ -520,7 +533,6 @@
 			curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($request));
 			$raw_result=curl_exec($curl);
 			curl_close($curl);
-			
 			$result_array=json_decode($raw_result, true);
 			$result=@$result_array['result'];
 		}
